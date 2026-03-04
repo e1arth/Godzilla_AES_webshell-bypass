@@ -55,6 +55,9 @@ fused_score = w_model * model_prob + w_rule * rule_prob
 #### 典型
 在 Colab 中训练适配器（adapter）：
 
+colab-T4GPU:
+GPU-16G/CUDA核心数-2560/显存带宽-320GB/s/FP32-8.1 TFLOPS/FP16-65 TFLOPS/Tensor Cores	320/
+
 基础模型：Qwen/Qwen2-0.5B-Instruct
 数据集：nbuser32/PHP-Webshell-Dataset
 
