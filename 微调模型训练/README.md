@@ -74,6 +74,18 @@ action
 
 在混合验证集（webshell + 真实的正常代码）上调整阈值。
 
+## 数据统计
+
+- 总样本数：`30,270`
+- 全量标签分布：
+  - `webshell(1)=16,324`（53.928%）
+  - `benign(0)=13,946`（46.072%）
+- 本地切分规模（来自训练日志）：
+  - `train=24,216`
+  - `val=3,027`
+  - `test=3,027`
+- 说明：采用分层切分，子集标签比例与全量接近
+
 ## 决策策略
 fused_score >= 0.95 -> webshell（Webshell），high（高风险），block（拦截）
 0.78 <= fused_score < 0.95 -> suspicious（可疑），review（审查风险），manual_review（人工审查）
