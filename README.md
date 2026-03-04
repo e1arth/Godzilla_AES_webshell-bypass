@@ -8,8 +8,9 @@
 
 注：该图展示的样本是二次过滤后的恶意样本，选了40+能过waf的phpwebshell进行测试。并不代表全量训练数据集，全量数据集采用了https://huggingface.co/datasets/nbuser32/PHP-Webshell-Dataset
 
-<img width="2589" height="729" alt="b02a5230965decbd5961bc86453f3b47" src="https://github.com/user-attachments/assets/90c0cec6-ab67-411e-923d-fe0ee1ee34a7" />
-<img width="1475" height="988" alt="3bc783e05921d57cf1c09265b93cf6fa" src="https://github.com/user-attachments/assets/4420ad22-4915-4781-bf01-cfcd5e33ad50" />
+<img width="1640" height="729" alt="b02a5230965decbd5961bc86453f3b47" src="https://github.com/user-attachments/assets/90c0cec6-ab67-411e-923d-fe0ee1ee34a7" />
+<img width="1640" height="793" alt="image" src="https://github.com/user-attachments/assets/90fab391-3481-4850-a29b-f393825f52ac" />
+
 
 ---- 
 XOR在静态中太显眼而且会被解开分析，想了下还是用AES，毕竟现在静态完善的太狠了。
