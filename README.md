@@ -11,7 +11,7 @@
 <img width="1640" height="729" alt="b02a5230965decbd5961bc86453f3b47" src="https://github.com/user-attachments/assets/90c0cec6-ab67-411e-923d-fe0ee1ee34a7" />
 <img width="1640" height="793" alt="image" src="https://github.com/user-attachments/assets/90fab391-3481-4850-a29b-f393825f52ac" />
 
-
+> Test metrics: {'test_loss': 0.08689013123512268, 'test_accuracy': 0.973571192599934, 'test_f1': 0.9750623441396509, 'test_precision': 0.993015873015873, 'test_recall': 0.9577464788732394, 'test_runtime': 71.2095, 'test_samples_per_second': 42.508, 'test_steps_per_second': 2.668, 'epoch': 1.0}
 ---- 
 XOR在静态中太显眼而且会被解开分析，想了下还是用AES，毕竟现在静态完善的太狠了。
 
