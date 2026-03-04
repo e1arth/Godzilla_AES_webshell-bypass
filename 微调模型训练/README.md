@@ -1,9 +1,9 @@
 # PHP Webshell 对抗检测 研究
 本文件记录了一个用于 PHP Webshell 对抗检测的实用工作流：
 
-在 PHP Webshell 数据集上微调 Qwen/Qwen2-0.5B-Instruct 模型
+首先在 PHP Webshell 数据集上微调 Qwen/Qwen2-0.5B-Instruct 模型
 对PHP文件运行模型推理
-将模型评分与静态规则相融合，以减少生产环境中的误报
+将模型评分与静态规则相融合，以减少生产环境中的误报，达到真实检测时对webshell的分析，以便研究可以绕过检测的webshell
 
 为什么建立此项目,纯模型分类对于分析来说并不实际，同时要对phpwebshell进行全面的验证，也要避免模型过于敏感自动联想任何高危或可执行的函数。
 
