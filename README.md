@@ -3,6 +3,15 @@
 ### Godzilla_AES加密器+采用打断数据流（Data-Flow Break）与动态回调伪装的 WebShell|Qwen2-0.5B-Instruc-webshell微调小模型检测方法与对抗。
 插件是基于哥斯拉底层反射的自定义AES通信加密器，phpwebshell则基于AES + gzdeflate+Data-Flow Break
 
+```mermaid
+graph LR
+    A["Godzilla Client"] -->|"POST + Cookie"| B["Cookie Gate"]
+    B -->|"cookie_key"| C["AES-128-ECB 解密 Stager"]
+    C -->|"解密后数据 $data"| D["数据流断点 ($$variable)"]
+    D -->|"@eval($err_log)"| E["Stager 执行"]
+    E -->|"$_SESSION 缓存"| F["Godzilla Payload"]
+```
+
 ## 本项目生成的荷载在Qwen2-0.5B-Instruct模型中经过30k webshell数据集训练微调后的小模型分析，并未命中。同时在长亭、阿里等webshell检测中也绕过。
 
 对于结果有疑虑可阅读：[Qwen2-0.5B-Instruc-webshell微调模型检测训练](./微调模型训练/README.md) 
