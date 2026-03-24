@@ -3,18 +3,11 @@
 ### Godzilla_AES加密器+采用打断与动态回调伪装的WebShell以及另一种自定义Stream Wrapper去除eval的webshell|Qwen2-0.5B-Instruc-webshell微调小模型检测方法与对抗。
 插件是基于哥斯拉底层反射的自定义AES通信加密器
 
-bypass_webshell.py基于AES+gzdeflate+Data-Flow Break(不依赖 stream wrapper，兼容低版本PHP)
+bypass_webshell.py基于AES+gzdeflate+Data-Flow Break(把它还放着主要是因为不依赖 stream wrapper，兼容低版本PHP，效果也还行)
 
-bypass_Noeval_Stream Wrapper.py基于AES+自定义Stream wrapper注册+include（ps：部分环境下例如open_basedir严格+禁用stream函数时无法使用）
+**bypass_webshell_vei.py**基于AES+自定义Stream Wrapper注册+include执行，全链路零eval，类多态触发（部分严格环境如禁用stream_wrapper_register时无法使用）。
 
-```mermaid
-graph LR
-    A["Godzilla Client"] -->|"POST + Cookie"| B["Cookie Gate"]
-    B -->|"cookie_key"| C["AES-128-ECB 解密 Stager"]
-    C -->|"解密后数据 $data"| D["数据流断点 ($$variable)"]
-    D -->|"@eval($err_log)"| E["Stager 执行"]
-    E -->|"$_SESSION 缓存"| F["Godzilla Payload"]
-```
+
 ```mermaid
 graph LR
     A["Godzilla Client"] -->|"POST + Cookie"| B["Cookie Gate<br/>filter_input()"]
