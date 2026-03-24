@@ -20,9 +20,12 @@ graph LR
     A["Godzilla Client"] -->|"POST + Cookie"| B["Cookie Gate<br/>filter_input()"]
     B -->|"cookie_key (16字节)"| C["AES-128-ECB 解密<br/>hex2bin → openssl_decrypt"]
     C -->|"gzinflate 解压"| D["$s = 明文 Stager"]
-    D -->|"$GLOBALS['buf_xxx'] = '<?php ' . $s"| E["自定义 Stream Wrapper<br/>stream_wrapper_register()"]
-    E -->|"include('scheme://buf_xxx')"| F["stream_read() 读取<br/>$GLOBALS → 代码执行"]
-    F -->|"$_SESSION 缓存"| G["Godzilla Payload<br/>内存驻留"]
+    D -->|"CacheStream::$d = '<?php ' . $s"| E["外层 Stream Wrapper<br/>静态属性传递 (零 $GLOBALS)"]
+    E -->|"include('scheme://1')"| F["stream_read() 读取<br/>self::$d → Stager 执行"]
+    F -->|"首次: $_SESSION 缓存 Payload"| G["Godzilla Payload<br/>内存驻留"]
+    G -->|"后续: 解密 Payload"| H["内层递归 Stream Wrapper<br/>IS::$d = '<?php ' . $payload"]
+    H -->|"include('随机协议://1')<br/>零 eval 执行"| I["run($data)<br/>命令执行 + 响应"]
+    I -->|"AES 加密 + sid 分隔符"| A
 ```
 
 ## 本项目生成的荷载在Qwen2-0.5B-Instruct模型中经过30k webshell数据集训练微调后的小模型分析，并未命中。同时在长亭、阿里等webshell检测中也绕过。
