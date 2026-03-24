@@ -4,6 +4,7 @@
 插件是基于哥斯拉底层反射的自定义AES通信加密器
 
 bypass_webshell.py基于AES+gzdeflate+Data-Flow Break(不依赖 stream wrapper，兼容低版本PHP)
+
 bypass_Noeval_Stream Wrapper.py基于AES+自定义Stream wrapper注册+include（ps：部分环境下例如open_basedir严格+禁用stream函数时无法使用）
 
 ```mermaid
